@@ -2,182 +2,73 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Neon Flow Field</title>
+  <title>Neon Infinite Wave Loop</title>
   <style>
     html, body {
       margin: 0;
-      padding: 0;
       height: 100%;
       width: 100%;
-      background: #191919; /* Notionのダーク背景に合わせる */
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-
-    .wrapper {
-      width: 100%;
-      max-width: 1200px; /* Notionの横幅に自然に収まる程度 */
-      aspect-ratio: 5 / 2; /* 横長の比率（好きに変えてOK） */
       background: #191919;
-      border-radius: 18px;
-      position: relative;
       overflow: hidden;
-      box-shadow:
-        0 0 24px rgba(34, 211, 238, 0.35),
-        0 0 48px rgba(88, 28, 135, 0.4);
     }
 
     canvas {
+      display: block;
       width: 100%;
       height: 100%;
-      display: block;
-    }
-
-    /* うっすらかかるグラスレイヤー（ほんのり立体感） */
-    .gloss {
-      pointer-events: none;
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.18), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.18), transparent 55%);
-      mix-blend-mode: screen;
-      opacity: 0.8;
     }
   </style>
 </head>
 <body>
-  <div class="wrapper">
-    <canvas id="flowCanvas"></canvas>
-    <div class="gloss"></div>
-  </div>
+  <canvas id="c"></canvas>
 
   <script>
-    const canvas = document.getElementById("flowCanvas");
+    const canvas = document.getElementById("c");
     const ctx = canvas.getContext("2d");
 
-    let width, height, dpr;
-    let particles = [];
-    const PARTICLE_COUNT = 650;        // 粒子の数
-    const BASE_SPEED = 0.6;            // 基本速度
-    const FIELD_SCALE = 0.0018;        // ベクトル場の細かさ
-    const TIME_SCALE = 0.00018;        // 時間による揺らぎ
-    const TRAIL_FADE = 0.075;          // 残像の残り具合（0.05〜0.12くらいで調整）
+    let w, h, t = 0;
 
     function resize() {
-      const rect = canvas.getBoundingClientRect();
-      dpr = window.devicePixelRatio || 1;
-      width = rect.width;
-      height = rect.height;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.globalCompositeOperation = "lighter";
-      initParticles();
-      clearCanvas(true);
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = 300; // 好きに変えられる（Notion向けに横長）
     }
+    window.addEventListener("resize", resize);
+    resize();
 
-    function clearCanvas(hard = false) {
-      if (hard) {
-        ctx.fillStyle = "#191919";
-        ctx.fillRect(0, 0, width, height);
-      } else {
-        // 残像を残しながら薄く上書き
-        ctx.fillStyle = `rgba(25, 25, 25, ${TRAIL_FADE})`;
-        ctx.fillRect(0, 0, width, height);
-      }
-    }
+    function draw() {
+      t += 0.008; // 速度調整
 
-    function initParticles() {
-      particles = [];
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          px: 0,
-          py: 0,
-          speed: BASE_SPEED * (0.6 + Math.random() * 0.8),
-          hueShift: Math.random(),  // 色の揺らぎ
-        });
-      }
-    }
+      ctx.fillStyle = "#191919";
+      ctx.fillRect(0, 0, w, h);
 
-    // 疑似ノイズ関数（sin/cosを組み合わせた軽量なベクトル場）
-    function flowField(x, y, t) {
-      const nx = x * FIELD_SCALE;
-      const ny = y * FIELD_SCALE;
+      const lineCount = 6;  
+      const amplitude = 40; 
+      const waveLength = 0.015;
 
-      const n1 = Math.sin(nx * 3.1 + t * 0.7) + Math.cos(ny * 2.3 - t * 0.5);
-      const n2 = Math.cos(nx * 1.7 - t * 0.4) - Math.sin(ny * 2.9 + t * 0.3);
-
-      const angle = Math.atan2(n2, n1);
-      return angle;
-    }
-
-    function lerp(a, b, t) {
-      return a + (b - a) * t;
-    }
-
-    // Aqua〜Blue〜Purpleのグラデーションを生成
-    function colorForParticle(p, t) {
-      const baseHueA = 185; // Aqua
-      const baseHueB = 265; // Purple
-      // p.hueShiftで個体差、tでゆっくり色が循環
-      const mix = (p.hueShift + t * 0.00003) % 1;
-      const hue = lerp(baseHueA, baseHueB, mix);
-      const sat = 85;
-      const light = 60;
-      return `hsl(${hue}, ${sat}%, ${light}%)`;
-    }
-
-    let lastTime = performance.now();
-
-    function animate(now) {
-      const dt = now - lastTime;
-      lastTime = now;
-
-      clearCanvas();
-
-      const time = now * TIME_SCALE;
-
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-
-        p.px = p.x;
-        p.py = p.y;
-
-        const angle = flowField(p.x, p.y, time);
-
-        const vx = Math.cos(angle) * p.speed;
-        const vy = Math.sin(angle) * p.speed;
-
-        p.x += vx;
-        p.y += vy;
-
-        // 端に出たらラップさせて流体っぽさを維持
-        if (p.x < -20) p.x = width + 20;
-        if (p.x > width + 20) p.x = -20;
-        if (p.y < -20) p.y = height + 20;
-        if (p.y > height + 20) p.y = -20;
-
-        // 線を描画
+      for (let i = 0; i < lineCount; i++) {
         ctx.beginPath();
-        ctx.moveTo(p.px, p.py);
-        ctx.lineTo(p.x, p.y);
-        ctx.strokeStyle = colorForParticle(p, now);
-        ctx.lineWidth = 1.1;
+
+        const hue = 180 + i * 20; // 青〜紫の帯
+        ctx.strokeStyle = `hsla(${hue}, 80%, 60%, 0.8)`;
+        ctx.lineWidth = 2;
+
+        for (let x = 0; x < w; x++) {
+          const y =
+            h / 2 +
+            Math.sin(x * waveLength + t * 4 + i * 1.2) *
+            amplitude *
+            Math.sin(t + i);
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
         ctx.stroke();
       }
 
-      requestAnimationFrame(animate);
+      requestAnimationFrame(draw);
     }
 
-    window.addEventListener("resize", resize);
-    resize();
-    requestAnimationFrame(animate);
+    draw();
   </script>
 </body>
 </html>
