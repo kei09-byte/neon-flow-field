@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Neon Aurora Bar Thin</title>
+  <title>Neon Aurora Bar – Cyan Edition</title>
   <style>
     html, body {
       margin: 0;
@@ -15,51 +15,52 @@
     .bar {
       position: relative;
       width: 100%;
-      height: 40px; /* ← 高さ。もっと薄くしたいなら20〜30でもOK */
+      height: 36px;  /* ← 細長い “光の帯” の推奨値。20〜40で調整可 */
       overflow: hidden;
       background: #191919;
     }
 
-    /* 発光基準の淡いグラデーション */
+    /* Cyan × Blue の淡いベース発光 */
     .base {
       position: absolute;
-      inset: -80% -10%;
+      inset: -70% -20%;
       background:
-        radial-gradient(circle at 20% 80%, rgba(34, 211, 238, 0.35), transparent 55%),
-        radial-gradient(circle at 80% 20%, rgba(129, 140, 248, 0.45), transparent 60%);
-      filter: blur(25px);
+        radial-gradient(circle at 15% 80%, rgba(34, 211, 238, 0.40), transparent 55%),
+        radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.40), transparent 60%);
+      filter: blur(26px);
       opacity: 0.55;
     }
 
-    /* メインのオーロラ帯（ミニクロックの色味に近い） */
+    /* ミニクロックと同じ色味の “青〜シアンの帯状オーロラ” */
     .aurora {
       position: absolute;
       inset: -120% -20%;
       background: linear-gradient(
         120deg,
         rgba(0, 255, 255, 0) 0%,
-        rgba(34, 211, 238, 0.6) 25%,
-        rgba(56, 189, 248, 0.55) 45%,
-        rgba(129, 140, 248, 0.55) 65%,
-        rgba(236, 72, 153, 0.45) 80%,
+        rgba(34, 211, 238, 0.55) 22%,
+        rgba(0, 255, 255, 0.65) 38%,
+        rgba(56, 189, 248, 0.55) 55%,
+        rgba(129, 140, 248, 0.18) 70%,   /* ← 紫は “気配程度” に弱めて残す */
         rgba(0, 255, 255, 0) 100%
       );
-      filter: blur(45px);
+      filter: blur(42px);
       mix-blend-mode: screen;
       animation: wave 22s ease-in-out infinite alternate;
-      opacity: 0.85;
+      opacity: 0.88;
     }
 
-    /* 質感を出す薄いノイズ */
+    /* 質感を出すノイズ */
     .grain {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg width='140' height='140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='140' height='140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
       mix-blend-mode: soft-light;
+      opacity: 0.5;
     }
 
-    /* かすかな境界光 */
+    /* 上下にうっすら光のライン */
     .edge {
       position: absolute;
       left: 0;
@@ -68,20 +69,20 @@
       background: linear-gradient(
         90deg,
         transparent,
-        rgba(148, 163, 184, 0.65),
+        rgba(148, 163, 184, 0.55),
         transparent
       );
-      opacity: 0.55;
+      opacity: 0.50;
     }
 
-    .edge.top { top: 2px; }
-    .edge.bottom { bottom: 2px; }
+    .edge.top { top: 3px; }
+    .edge.bottom { bottom: 3px; }
 
-    /* 動き */
+    /* 動き（ゆっくり、滑らか、一定方向に揺れる） */
     @keyframes wave {
-      0% { transform: translateX(-25%) translateY(8%) skewX(-10deg); }
-      50% { transform: translateX(0%) translateY(-6%) skewX(2deg); }
-      100% { transform: translateX(25%) translateY(10%) skewX(8deg); }
+      0% { transform: translateX(-25%) translateY(6%) skewX(-8deg); }
+      50% { transform: translateX(0%) translateY(-4%) skewX(1deg); }
+      100% { transform: translateX(25%) translateY(8%) skewX(8deg); }
     }
   </style>
 </head>
